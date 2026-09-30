@@ -13,17 +13,15 @@ Reproducible processing archive for four gallium complex spectra measured on TOS
 
 The raw empty aluminium cell and short empty-cryostat measurements are also preserved.
 
-## Final processing pipeline
+## Final relative-shape processing pipeline
 
 1. **Preserve raw data unchanged.**
 2. Apply a **centred 5-point moving average** to the empty aluminium spectrum.
 3. Subtract this smoothed aluminium background from each sample.
-4. Divide each corrected spectrum by its **sample mass in mg**.
-5. In each mass-normalised spectrum, identify the local maximum in **350–430 cm⁻¹**.
-6. Normalize each spectrum so this anchor peak has intensity **1.0**.
-7. Apply a **centred 3-point moving average** to the normalized sample spectrum.
-8. Re-normalize at the **same fixed anchor grid point** after smoothing so the anchor returns to exactly **1.0**.
-9. Form deuteration difference spectra as **H − D** separately for the brominated and non-brominated pairs.
+4. Identify the common ~400 cm⁻¹ anchor position as the sampled local maximum in **350–430 cm⁻¹**.
+5. Apply a **centred 3-point moving average** to each aluminium-subtracted sample spectrum.
+6. **Normalize once** by the 3-point-smoothed intensity at that fixed anchor position, so the anchor is exactly 1.0.
+7. Form deuteration difference spectra as **H − D** separately for the brominated and non-brominated pairs.
 
 ### Anchor positions
 
@@ -34,7 +32,9 @@ The raw empty aluminium cell and short empty-cryostat measurements are also pres
 | H | Mp08-H | 402.098 cm⁻¹ |
 | D | Mp08-D | 400.098 cm⁻¹ |
 
-The later anchor normalization removes the absolute mass scale mathematically, but the mass-normalised files are retained because they were an explicit stage of the analysis and remain useful for absolute-intensity comparisons.
+## Mass-normalised data
+
+A separate mass-normalised branch is retained for absolute-intensity comparison. It is **not used as an input to the final relative-shape normalization**, because dividing a spectrum by its mass is only a constant scale factor and therefore cancels when that same spectrum is divided by its own ~400 cm⁻¹ anchor intensity.
 
 ## Cryostat data
 
@@ -48,11 +48,10 @@ metadata/                         masses, formulas, anchor positions
 processed/
   01_aluminium_5pt/               smoothed empty-Al background
   02_al_subtracted/               sample - smoothed empty Al
-  03_mass_normalised/             stage 02 divided by mass
-  04_anchor_normalised/           ~400 cm^-1 anchor set to 1
-  05_three_point_smoothed/        light smoothing of stage 04
-  06_final_renormalised/          final spectra, anchor reset to 1
-  07_difference/                  H - D difference spectra
+  03_mass_normalised/             separate absolute-intensity branch
+  04_three_point_smoothed/        3-point smoothing before normalization
+  05_final_anchor_normalised/     final spectra; one normalization only
+  06_difference/                  H - D difference spectra
   exploratory_cryo/               9- and 19-point cryostat smooths; not final
 plots/                            final comparison and difference PNGs
 dashboard/                        static dashboard for GitHub Pages
@@ -72,8 +71,8 @@ python -m pip install -r requirements.txt
 python scripts/process_spectra.py
 ```
 
-The script recreates the numerical processed-data stages from the files in `raw/`.
+The script recreates every derived numerical stage from the files in `raw/`.
 
 ## Dashboard
 
-Open `dashboard/index.html` locally, or publish the `dashboard/` folder with GitHub Pages. A Pages workflow is included in `.github/workflows/pages.yml`.
+The live dashboard is available via GitHub Pages and presents the two final H/D comparison plots first.
