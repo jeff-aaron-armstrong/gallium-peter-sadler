@@ -4,36 +4,31 @@
     50,
     1500
   ],
-  "final_pipeline": [
+  "final_relative_pipeline": [
     "5-point centred average of empty aluminium",
     "subtract smoothed aluminium",
-    "divide by sample mass in mg",
-    "local maximum in 350\u2013430 cm^-1",
-    "normalize anchor to 1",
-    "3-point centred average",
-    "renormalize at same anchor grid point",
+    "identify anchor position as local maximum in 350\u2013430 cm^-1",
+    "3-point centred average of aluminium-subtracted sample spectrum",
+    "single normalization by smoothed intensity at the fixed anchor position",
     "H-D differences"
   ],
+  "mass_normalised_branch": "Exported separately for absolute-intensity comparison; not used in final relative-shape normalization.",
   "anchors": {
     "Br-H": {
       "energy_cm-1": 400.098,
-      "mass_normalised_peak_height": 0.0004916874853801169,
-      "smoothed_anchor_before_renormalisation": 0.9718240496348496
+      "smoothed_anchor_height": 0.08170956666666666
     },
     "Br-D": {
       "energy_cm-1": 400.098,
-      "mass_normalised_peak_height": 0.00040504494845360826,
-      "smoothed_anchor_before_renormalisation": 0.9862008441980219
+      "smoothed_anchor_height": 0.038747199999999996
     },
     "H": {
       "energy_cm-1": 402.098,
-      "mass_normalised_peak_height": 0.000654286265060241,
-      "smoothed_anchor_before_renormalisation": 0.9758310475107368
+      "smoothed_anchor_height": 0.05299324666666667
     },
     "D": {
       "energy_cm-1": 400.098,
-      "mass_normalised_peak_height": 0.0008144734883720929,
-      "smoothed_anchor_before_renormalisation": 0.9879935751521791
+      "smoothed_anchor_height": 0.03460186666666666
     }
   },
   "cryostat": {
