@@ -1,0 +1,85 @@
+TITLE      CSD ENTRY shelx
+REMARK   1 File created by GaussView 6.0.16
+HETATM    1  C           0      -2.638   1.693   0.197                       C
+HETATM    2  H           0      -3.230   2.613   0.313                       H
+HETATM    3  C           0      -3.392   0.458   0.053                       C
+HETATM    4  C           0      -2.751  -0.836  -0.124                       C
+HETATM    5  C           0      -3.579  -1.999  -0.246                       C
+HETATM    6  H           0      -3.088  -2.965  -0.372                       H
+HETATM    7  C           0      -4.987  -1.898  -0.202                       C
+HETATM    8  H           0      -5.604  -2.792  -0.295                       H
+HETATM    9  C           0      -5.610  -0.617  -0.034                       C
+HETATM   10  C           0      -4.833   0.547   0.092                       C
+HETATM   11  H           0      -5.312   1.519   0.220                       H
+HETATM   12  C           0       2.638   1.693  -0.197                       C
+HETATM   13  H           0       3.230   2.613  -0.313                       H
+HETATM   14  C           0       3.392   0.458  -0.053                       C
+HETATM   15  C           0       2.751  -0.836   0.124                       C
+HETATM   16  C           0       3.579  -1.999   0.246                       C
+HETATM   17  H           0       3.088  -2.965   0.373                       H
+HETATM   18  C           0       4.987  -1.898   0.202                       C
+HETATM   19  H           0       5.604  -2.792   0.296                       H
+HETATM   20  C           0       5.610  -0.617   0.033                       C
+HETATM   21  C           0       4.833   0.546  -0.092                       C
+HETATM   22  H           0       5.312   1.519  -0.220                       H
+HETATM   23  C           0      -0.651   3.113   0.424                       C
+HETATM   24  H           0      -0.394   3.211   1.493                       H
+HETATM   25  H           0      -1.308   3.950   0.139                       H
+HETATM   26  C           0       0.651   3.113  -0.424                       C
+HETATM   27  H           0       0.394   3.211  -1.493                       H
+HETATM   28  H           0       1.308   3.950  -0.139                       H
+HETATM   29 Br           0      -7.566  -0.498   0.021                      Br
+HETATM   30 Br           0       7.566  -0.498  -0.022                      Br
+HETATM   31 Ga           0       0.000   0.268   0.000                      Ga
+HETATM   32  N           0      -1.317   1.793   0.212                       N
+HETATM   33  N           0       1.317   1.793  -0.212                       N
+HETATM   34  O           0      -1.402  -0.998  -0.193                       O
+HETATM   35  O           0       1.402  -0.998   0.193                       O
+HETATM   36  O           0       0.018   0.102   2.121                       O
+HETATM   37  H           0      -0.724   0.257   2.743                       H
+HETATM   38  H           0       0.566  -0.674   2.373                       H
+HETATM   39  O           0      -0.018   0.102  -2.121                       O
+HETATM   40  H           0      -0.566  -0.675  -2.372                       H
+HETATM   41  H           0       0.723   0.257  -2.743                       H
+END
+CONECT    1    2    3   32
+CONECT    2    1
+CONECT    3    1    4   10
+CONECT    4    3    5   34
+CONECT    5    4    6    7
+CONECT    6    5
+CONECT    7    5    8    9
+CONECT    8    7
+CONECT    9    7   10   29
+CONECT   10    9    3   11
+CONECT   11   10
+CONECT   12   13   14   33
+CONECT   13   12
+CONECT   14   12   15   21
+CONECT   15   14   16   35
+CONECT   16   15   17   18
+CONECT   17   16
+CONECT   18   16   19   20
+CONECT   19   18
+CONECT   20   18   21   30
+CONECT   21   20   14   22
+CONECT   22   21
+CONECT   23   24   25   26   32
+CONECT   24   23
+CONECT   25   23
+CONECT   26   23   27   28   33
+CONECT   27   26
+CONECT   28   26
+CONECT   29    9
+CONECT   30   20
+CONECT   31   32   33   34   35
+CONECT   32    1   31   23
+CONECT   33   26   31   12
+CONECT   34    4   31
+CONECT   35   31   15
+CONECT   36   37   38
+CONECT   37   36
+CONECT   38   36
+CONECT   39   40   41
+CONECT   40   39
+CONECT   41   39
