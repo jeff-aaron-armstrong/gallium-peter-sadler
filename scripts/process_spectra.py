@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 """Reproduce the Gallium / Peter Sadler TOSCA processing pipeline.
 
-Final pipeline
---------------
+Final relative-shape pipeline
+-----------------------------
 1. Centred 5-point arithmetic mean of the empty aluminium spectrum.
-2. Subtract smoothed aluminium from each sample.
-3. Divide each corrected spectrum by sample mass (mg).
-4. Identify the local maximum in 350–430 cm^-1.
-5. Normalize that anchor peak to 1.
-6. Apply a centred 3-point arithmetic mean.
-7. Re-normalize at the same fixed anchor grid point after smoothing.
-8. Calculate H-D differences separately for brominated/non-brominated pairs.
+2. Subtract the smoothed aluminium spectrum from each sample.
+3. Identify the common ~400 cm^-1 anchor as the sampled local maximum in 350–430 cm^-1.
+4. Apply a centred 3-point arithmetic mean to each aluminium-subtracted sample spectrum.
+5. Normalize ONCE by the 3-point-smoothed intensity at that fixed anchor position.
+6. Calculate H-D differences separately for brominated and non-brominated pairs.
 
-The short empty-cryostat run is preserved and exploratory 9/19-point smooths
-are exported, but no cryostat subtraction is used in the final spectra.
+A mass-normalised branch is exported separately for absolute-intensity comparison, but it is
+not part of the final relative-shape normalization because any constant mass scale cancels
+when a spectrum is divided by its own anchor intensity.
+
+The short empty-cryostat run is preserved and exploratory 9/19-point smooths are exported,
+but no cryostat subtraction is used in the final spectra.
 """
 from pathlib import Path
 import json
@@ -41,11 +43,18 @@ SAMPLES = {
 }
 
 def ensure_dirs():
+    # processed/ is fully generated: rebuild it cleanly so obsolete exploratory stages
+    # from earlier versions do not remain in the repository.
+    if PROCESSED.exists():
+        shutil.rmtree(PROCESSED)
     for p in [
-        PROCESSED/"01_aluminium_5pt", PROCESSED/"02_al_subtracted",
-        PROCESSED/"03_mass_normalised", PROCESSED/"04_anchor_normalised",
-        PROCESSED/"05_three_point_smoothed", PROCESSED/"06_final_renormalised",
-        PROCESSED/"07_difference", PROCESSED/"exploratory_cryo",
+        PROCESSED/"01_aluminium_5pt",
+        PROCESSED/"02_al_subtracted",
+        PROCESSED/"03_mass_normalised",
+        PROCESSED/"04_three_point_smoothed",
+        PROCESSED/"05_final_anchor_normalised",
+        PROCESSED/"06_difference",
+        PROCESSED/"exploratory_cryo",
         META, PLOTS, ASSETS,
     ]:
         p.mkdir(parents=True, exist_ok=True)
@@ -58,6 +67,11 @@ def centred_average(y, n):
     p = n // 2
     return np.convolve(np.pad(y, (p, p), mode="edge"), np.ones(n)/n, mode="valid")
 
+def centred_average_uncertainty(e, n):
+    p = n // 2
+    ep = np.pad(e, (p, p), mode="edge")
+    return np.sqrt(np.convolve(ep**2, np.ones(n), mode="valid")) / n
+
 def save_pair(x, final, keys, labels, title, filename):
     m = (x >= 50) & (x <= 1500)
     plt.figure(figsize=(11, 6))
@@ -66,7 +80,7 @@ def save_pair(x, final, keys, labels, title, filename):
     plt.axhline(1.0, linewidth=0.8, alpha=0.25, linestyle="--")
     plt.xlim(50, 1500)
     plt.xlabel(r"Energy transfer (cm$^{-1}$)")
-    plt.ylabel(r"Relative intensity (anchor peak = 1)")
+    plt.ylabel(r"Relative intensity (smoothed anchor = 1)")
     plt.title(title)
     plt.legend()
     plt.tight_layout()
@@ -93,7 +107,6 @@ def save_difference(x, y, title, filename):
 def main():
     ensure_dirs()
 
-    # Record supplied metadata.
     rows = []
     for key, s in SAMPLES.items():
         rows.append({
@@ -104,76 +117,87 @@ def main():
         })
     pd.DataFrame(rows).to_csv(META/"samples.csv", index=False)
 
+    # Background: smooth empty aluminium with a centred 5-point average.
     x, y_al, e_al = load_dat(RAW/"emptyAl.dat")
     y_al_sm = centred_average(y_al, 5)
-    ep = np.pad(e_al, (2, 2), mode="edge")
-    e_al_sm = np.sqrt(np.convolve(ep**2, np.ones(5), mode="valid")) / 5.0
+    e_al_sm = centred_average_uncertainty(e_al, 5)
 
     pd.DataFrame({
-        "energy_cm-1": x, "raw_intensity": y_al, "raw_uncertainty": e_al,
+        "energy_cm-1": x,
+        "raw_intensity": y_al,
+        "raw_uncertainty": e_al,
         "smoothed_intensity_5pt": y_al_sm,
         "smoothed_uncertainty_5pt": e_al_sm,
     }).to_csv(PROCESSED/"01_aluminium_5pt"/"emptyAl_5pt_centered.csv", index=False)
 
-    mass_norm = {}
+    al_sub, al_sub_err = {}, {}
+
+    # Main sample correction. Mass-normalised files are also exported, but they form
+    # a parallel absolute-intensity branch rather than an input to the final normalization.
     for key, s in SAMPLES.items():
         _, y, e = load_dat(RAW/s["file"])
         yc = y - y_al_sm
         ec = np.sqrt(e**2 + e_al_sm**2)
-        ym = yc / s["mass_mg"]
-        em = ec / s["mass_mg"]
-        mass_norm[key] = ym
+        al_sub[key], al_sub_err[key] = yc, ec
 
         pd.DataFrame({
-            "energy_cm-1": x, "intensity_al_subtracted": yc,
+            "energy_cm-1": x,
+            "intensity_al_subtracted": yc,
             "uncertainty_al_subtracted": ec,
         }).to_csv(PROCESSED/"02_al_subtracted"/f"{key}_al_subtracted.csv", index=False)
 
         pd.DataFrame({
-            "energy_cm-1": x, "intensity_per_mg": ym,
-            "uncertainty_per_mg": em,
+            "energy_cm-1": x,
+            "intensity_per_mg": yc / s["mass_mg"],
+            "uncertainty_per_mg": ec / s["mass_mg"],
         }).to_csv(PROCESSED/"03_mass_normalised"/f"{key}_mass_normalised.csv", index=False)
 
-    # Exact sampled anchor: local maximum in 350–430 cm^-1.
+    # Fix the anchor position using the sampled local maximum in the Al-subtracted
+    # spectrum between 350 and 430 cm^-1. Dividing by mass would not change this position.
     window = (x >= 350) & (x <= 430)
-    anchors, first_norm, smooth3, final = {}, {}, {}, {}
+    anchors = {}
     for key in SAMPLES:
         inds = np.where(window)[0]
-        idx = inds[np.argmax(mass_norm[key][inds])]
-        peak_y = mass_norm[key][idx]
-        first_norm[key] = mass_norm[key] / peak_y
-        anchors[key] = {
-            "index": int(idx),
-            "energy_cm-1": float(x[idx]),
-            "mass_normalised_peak_height": float(peak_y),
-        }
-        pd.DataFrame({
-            "energy_cm-1": x,
-            "relative_intensity_anchor_1": first_norm[key],
-        }).to_csv(PROCESSED/"04_anchor_normalised"/f"{key}_anchor_normalised.csv", index=False)
+        idx = inds[np.argmax(al_sub[key][inds])]
+        anchors[key] = {"index": int(idx), "energy_cm-1": float(x[idx])}
 
-        smooth3[key] = centred_average(first_norm[key], 3)
-        pd.DataFrame({
-            "energy_cm-1": x,
-            "relative_intensity_3pt_smoothed": smooth3[key],
-        }).to_csv(PROCESSED/"05_three_point_smoothed"/f"{key}_3pt_smoothed.csv", index=False)
+    # Light sample smoothing FIRST, followed by the ONE normalization used in the
+    # final relative spectra.
+    smooth3, smooth3_err, final = {}, {}, {}
+    for key in SAMPLES:
+        ys = centred_average(al_sub[key], 3)
+        es = centred_average_uncertainty(al_sub_err[key], 3)
+        smooth3[key], smooth3_err[key] = ys, es
 
-        anchor_after = float(smooth3[key][idx])
-        anchors[key]["smoothed_anchor_before_renormalisation"] = anchor_after
-        final[key] = smooth3[key] / anchor_after
         pd.DataFrame({
             "energy_cm-1": x,
-            "relative_intensity_final": final[key],
-        }).to_csv(PROCESSED/"06_final_renormalised"/f"{key}_final.csv", index=False)
+            "intensity_3pt_smoothed": ys,
+            "uncertainty_3pt_smoothed": es,
+        }).to_csv(PROCESSED/"04_three_point_smoothed"/f"{key}_3pt_smoothed.csv", index=False)
+
+        idx = anchors[key]["index"]
+        anchor_height = float(ys[idx])
+        anchors[key]["smoothed_anchor_height"] = anchor_height
+
+        yf = ys / anchor_height
+        ef = es / abs(anchor_height)
+        final[key] = yf
+
+        pd.DataFrame({
+            "energy_cm-1": x,
+            "relative_intensity_final": yf,
+            "uncertainty_scaled_by_anchor": ef,
+        }).to_csv(PROCESSED/"05_final_anchor_normalised"/f"{key}_final.csv", index=False)
 
     anchor_rows = []
     for key, s in SAMPLES.items():
         a = anchors[key]
         anchor_rows.append({
-            "dataset": key, "compound": s["compound"], "mass_mg": s["mass_mg"],
+            "dataset": key,
+            "compound": s["compound"],
+            "mass_mg": s["mass_mg"],
             "anchor_peak_cm-1": a["energy_cm-1"],
-            "mass_normalised_peak_height": a["mass_normalised_peak_height"],
-            "smoothed_anchor_before_renormalisation": a["smoothed_anchor_before_renormalisation"],
+            "smoothed_anchor_height_before_normalisation": a["smoothed_anchor_height"],
         })
     pd.DataFrame(anchor_rows).to_csv(META/"normalisation_anchors.csv", index=False)
 
@@ -185,9 +209,9 @@ def main():
         pd.DataFrame({
             "energy_cm-1": x,
             "relative_intensity_difference_H_minus_D": y,
-        }).to_csv(PROCESSED/"07_difference"/f"{name}.csv", index=False)
+        }).to_csv(PROCESSED/"06_difference"/f"{name}.csv", index=False)
 
-    # Exploratory cryostat smoothing only.
+    # Exploratory cryostat smoothing only; not used in the final pipeline.
     _, ycr, _ = load_dat(RAW/"emptycryo.dat")
     for n in (9, 19):
         pd.DataFrame({
@@ -208,19 +232,21 @@ def main():
     manifest = {
         "project": "Gallium – Peter Sadler TOSCA spectra",
         "dashboard_region_cm-1": [50, 1500],
-        "final_pipeline": [
+        "final_relative_pipeline": [
             "5-point centred average of empty aluminium",
             "subtract smoothed aluminium",
-            "divide by sample mass in mg",
-            "local maximum in 350–430 cm^-1",
-            "normalize anchor to 1",
-            "3-point centred average",
-            "renormalize at same anchor grid point",
+            "identify anchor position as local maximum in 350–430 cm^-1",
+            "3-point centred average of aluminium-subtracted sample spectrum",
+            "single normalization by smoothed intensity at the fixed anchor position",
             "H-D differences",
         ],
+        "mass_normalised_branch": "Exported separately for absolute-intensity comparison; not used in final relative-shape normalization.",
         "anchors": {k: {kk: vv for kk, vv in a.items() if kk != "index"} for k,a in anchors.items()},
-        "cryostat": {"raw_preserved": True, "exploratory_smoothing_points": [9,19],
-                     "used_in_final_pipeline": False},
+        "cryostat": {
+            "raw_preserved": True,
+            "exploratory_smoothing_points": [9,19],
+            "used_in_final_pipeline": False
+        },
     }
     (META/"processing_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
