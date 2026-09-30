@@ -1,1 +1,3 @@
-numpy\npandas\nmatplotlib\n
+numpy
+pandas
+matplotlib
