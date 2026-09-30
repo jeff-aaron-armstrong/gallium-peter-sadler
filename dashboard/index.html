@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallium – Peter Sadler TOSCA dashboard</title>
+<style>
+body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; background:#f6f7f9; color:#1f2937; }
+main { max-width: 1180px; margin: 0 auto; padding: 28px; }
+h1 { margin-bottom: 6px; }
+.lead { color:#4b5563; margin-top:0; }
+.card { background:white; border:1px solid #e5e7eb; border-radius:14px; padding:20px; margin:18px 0; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+img { width:100%; height:auto; border-radius:8px; }
+table { border-collapse:collapse; width:100%; }
+th, td { text-align:left; padding:9px 10px; border-bottom:1px solid #e5e7eb; }
+code { background:#f3f4f6; padding:2px 5px; border-radius:4px; }
+.step { margin:9px 0; padding-left:8px; }
+.note { background:#fffbeb; border-left:4px solid #f59e0b; padding:12px 14px; }
+details { margin-top:12px; }
+@media (max-width: 800px) { .grid { grid-template-columns:1fr; } main { padding:16px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Gallium – Peter Sadler TOSCA spectra</h1>
+<p class="lead">Four gallium complexes: brominated/non-brominated × protiated/deuterated. Dashboard range: 50–1500 cm⁻¹.</p>
+
+<div class="card">
+<h2>Main comparison</h2>
+<div class="grid">
+<div><h3>Brominated pair</h3><img src="assets/final_brominated_pair.png" alt="Brominated H vs D"></div>
+<div><h3>Non-brominated pair</h3><img src="assets/final_non_brominated_pair.png" alt="Non-brominated H vs D"></div>
+</div>
+<p>These are the final spectra after smoothed aluminium subtraction, mass normalisation, anchor normalisation, light 3-point smoothing, and re-normalisation at the same anchor point.</p>
+</div>
+
+<div class="card">
+<h2>What was done to the data?</h2>
+<div class="step"><b>1.</b> Preserve every supplied <code>.dat</code> file unchanged in <code>raw/</code>.</div>
+<div class="step"><b>2.</b> Smooth the empty aluminium cell with a <b>centred 5-point arithmetic mean</b>.</div>
+<div class="step"><b>3.</b> Subtract that smoothed aluminium spectrum from each measured sample.</div>
+<div class="step"><b>4.</b> Divide by sample mass in mg.</div>
+<div class="step"><b>5.</b> Find the local maximum in <b>350–430 cm⁻¹</b> and set its intensity to 1.0.</div>
+<div class="step"><b>6.</b> Apply a <b>centred 3-point arithmetic mean</b> to each normalized sample spectrum.</div>
+<div class="step"><b>7.</b> Because smoothing changes the sampled peak height slightly, re-normalize at the <b>same fixed anchor grid point</b> so it is again exactly 1.0.</div>
+<div class="step"><b>8.</b> Calculate deuteration differences as <b>H − D</b>.</div>
+<p class="note"><b>Cryostat:</b> the short empty-cryostat spectrum is retained, and the exploratory 9- and 19-point averages are archived, but the cryostat is <b>not subtracted</b> from the final spectra.</p>
+</div>
+
+<div class="card">
+<h2>Samples and normalization anchors</h2>
+<table>
+<thead><tr><th>Dataset</th><th>Compound</th><th>Mass (mg)</th><th>Anchor (cm⁻¹)</th></tr></thead>
+<tbody><tr><td>Br-H</td><td>Mp50-H</td><td>171</td><td>400.098</td></tr><tr><td>Br-D</td><td>Mp50-D</td><td>97</td><td>400.098</td></tr><tr><td>H</td><td>Mp08-H</td><td>83</td><td>402.098</td></tr><tr><td>D</td><td>Mp08-D</td><td>43</td><td>400.098</td></tr></tbody>
+</table>
+<p>The mass-normalised stage is preserved for provenance and absolute-intensity comparison. Once each spectrum is normalized to its own ~400 cm⁻¹ anchor, the overall mass scale cancels from the final relative-shape comparison.</p>
+</div>
+
+<div class="card">
+<h2>Deuteration difference spectra</h2>
+<details>
+<summary>Show H − D difference plots</summary>
+<div class="grid">
+<div><h3>Brominated</h3><img src="assets/difference_brominated.png" alt="Brominated H minus D"></div>
+<div><h3>Non-brominated</h3><img src="assets/difference_non_brominated.png" alt="Non-brominated H minus D"></div>
+</div>
+<p>Positive values indicate greater relative intensity in the protiated spectrum after the common anchor normalization; negative values indicate greater relative intensity in the deuterated spectrum.</p>
+</details>
+</div>
+
+<div class="card">
+<h2>Data provenance</h2>
+<p>Every numerical stage is written to a separate CSV folder under <code>processed/</code>. The full transformation can be regenerated with <code>python scripts/process_spectra.py</code>.</p>
+<ul>
+<li><code>01_aluminium_5pt</code> — empty-Al smoothing</li>
+<li><code>02_al_subtracted</code> — aluminium-subtracted samples</li>
+<li><code>03_mass_normalised</code> — per-mg spectra</li>
+<li><code>04_anchor_normalised</code> — ~400 cm⁻¹ peak set to 1</li>
+<li><code>05_three_point_smoothed</code> — lightly smoothed normalized spectra</li>
+<li><code>06_final_renormalised</code> — final H/D comparison spectra</li>
+<li><code>07_difference</code> — H − D spectra</li>
+<li><code>exploratory_cryo</code> — cryostat tests, excluded from final pipeline</li>
+</ul>
+</div>
+</main>
+</body>
+</html>
