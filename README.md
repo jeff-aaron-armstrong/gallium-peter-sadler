@@ -76,3 +76,10 @@ The script recreates every derived numerical stage from the files in `raw/`.
 ## Dashboard
 
 The live dashboard is available via GitHub Pages and presents the two final H/D comparison plots first.
+
+
+## Reference calculations
+
+Supplied Gaussian structures and vibrational-frequency calculations for the non-brominated (R1 / Mp08 family) and brominated (R2 / Mp50 family) cations are archived under `calculations/gaussian/`.
+
+These are B3LYP/CEP-31G + GD3 cation calculations with 117 real modes in each case. See [the calculation notes](calculations/gaussian/README.md) for the model scope and mapping to the experimental systems.
