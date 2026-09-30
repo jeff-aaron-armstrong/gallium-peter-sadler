@@ -32,7 +32,7 @@ details { margin-top:12px; }
 <div><h3>Brominated pair</h3><img src="assets/final_brominated_pair.png" alt="Brominated H vs D"></div>
 <div><h3>Non-brominated pair</h3><img src="assets/final_non_brominated_pair.png" alt="Non-brominated H vs D"></div>
 </div>
-<p>These are the final spectra after smoothed aluminium subtraction, mass normalisation, anchor normalisation, light 3-point smoothing, and re-normalisation at the same anchor point.</p>
+<p>These are the final spectra after smoothed aluminium subtraction, a light 3-point centred average, and a single normalization using the smoothed intensity at the common ~400 cm⁻¹ anchor.</p>
 </div>
 
 <div class="card">
@@ -54,7 +54,7 @@ details { margin-top:12px; }
 <thead><tr><th>Dataset</th><th>Compound</th><th>Mass (mg)</th><th>Anchor (cm⁻¹)</th></tr></thead>
 <tbody><tr><td>Br-H</td><td>Mp50-H</td><td>171</td><td>400.098</td></tr><tr><td>Br-D</td><td>Mp50-D</td><td>97</td><td>400.098</td></tr><tr><td>H</td><td>Mp08-H</td><td>83</td><td>402.098</td></tr><tr><td>D</td><td>Mp08-D</td><td>43</td><td>400.098</td></tr></tbody>
 </table>
-<p>The mass-normalised stage is preserved for provenance and absolute-intensity comparison. Once each spectrum is normalized to its own ~400 cm⁻¹ anchor, the overall mass scale cancels from the final relative-shape comparison.</p>
+<p>A separate mass-normalised dataset is preserved for absolute-intensity comparison, but it is not part of the final relative-shape pipeline: the mass factor would cancel when each spectrum is divided by its own ~400 cm⁻¹ anchor.</p>
 </div>
 
 <div class="card">
