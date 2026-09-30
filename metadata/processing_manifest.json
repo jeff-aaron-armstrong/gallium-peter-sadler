@@ -1,0 +1,47 @@
+{
+  "project": "Gallium \u2013 Peter Sadler TOSCA spectra",
+  "dashboard_region_cm-1": [
+    50,
+    1500
+  ],
+  "final_pipeline": [
+    "5-point centred average of empty aluminium",
+    "subtract smoothed aluminium",
+    "divide by sample mass in mg",
+    "local maximum in 350\u2013430 cm^-1",
+    "normalize anchor to 1",
+    "3-point centred average",
+    "renormalize at same anchor grid point",
+    "H-D differences"
+  ],
+  "anchors": {
+    "Br-H": {
+      "energy_cm-1": 400.098,
+      "mass_normalised_peak_height": 0.0004916874853801169,
+      "smoothed_anchor_before_renormalisation": 0.9718240496348496
+    },
+    "Br-D": {
+      "energy_cm-1": 400.098,
+      "mass_normalised_peak_height": 0.00040504494845360826,
+      "smoothed_anchor_before_renormalisation": 0.9862008441980219
+    },
+    "H": {
+      "energy_cm-1": 402.098,
+      "mass_normalised_peak_height": 0.000654286265060241,
+      "smoothed_anchor_before_renormalisation": 0.9758310475107368
+    },
+    "D": {
+      "energy_cm-1": 400.098,
+      "mass_normalised_peak_height": 0.0008144734883720929,
+      "smoothed_anchor_before_renormalisation": 0.9879935751521791
+    }
+  },
+  "cryostat": {
+    "raw_preserved": true,
+    "exploratory_smoothing_points": [
+      9,
+      19
+    ],
+    "used_in_final_pipeline": false
+  }
+}

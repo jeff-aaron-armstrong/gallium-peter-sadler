@@ -1,0 +1,5 @@
+compound,dataset,raw_file,series,isotope,molecular_weight_g_mol,formula_as_supplied,mass_mg,amount_mmol
+Mp50-H,Br-H,Br-H.dat,brominated,H,591.85,"C16 H16 Br2 Ga N2 O4,N O3",171.0,0.28892455858747995
+Mp50-D,Br-D,Br-D.dat,brominated,D,595.95,"C16 H12 D4 Br2 Ga N2 O4,N O3",97.0,0.16276533266213608
+Mp08-H,H,H.dat,non-brominated,H,452.07,"C16 H18 Ga N2 O4,N O3,H2 O",83.0,0.18359988497356605
+Mp08-D,D,D.dat,non-brominated,D,456.1,"C16 H14 D4 Ga N2 O4,N O3,H2 O",43.0,0.09427757070817802
